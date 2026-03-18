@@ -1,0 +1,94 @@
+import streamlit as st
+import pickle
+import pandas as pd
+import requests
+from concurrent.futures import ThreadPoolExecutor
+
+
+# Fetch poster + rating + overview
+@st.cache_data
+def fetch_movie_details(movie_title):
+    url = f"https://api.themoviedb.org/3/search/movie?api_key=55eff2f28228fda1ca6b94677e3c5ba1&query={movie_title}"
+
+    try:
+        response = requests.get(url, timeout=3)
+        data = response.json()
+
+        if data['results']:
+            movie = data['results'][0]
+
+            poster_path = movie.get('poster_path')
+            rating = movie.get('vote_average')
+            overview = movie.get('overview')
+
+            poster_url = (
+                "https://image.tmdb.org/t/p/w500" + poster_path
+                if poster_path
+                else "https://via.placeholder.com/500x750?text=No+Image"
+            )
+
+            return poster_url, rating, overview
+
+    except:
+        pass
+
+    return "https://via.placeholder.com/500x750?text=No+Image", "N/A", "No description available"
+
+
+# Recommendation function
+def recommend(movie):
+    movie_index = movies[movies['title'] == movie].index[0]
+    distances = similarity[movie_index]
+
+    movies_list = sorted(
+        list(enumerate(distances)),
+        reverse=True,
+        key=lambda x: x[1]
+    )[1:6]
+
+    movie_titles = [movies.iloc[i[0]].title for i in movies_list]
+
+    posters = []
+    ratings = []
+    overviews = []
+
+    # Parallel API calls
+    with ThreadPoolExecutor(max_workers=5) as executor:
+        results = list(executor.map(fetch_movie_details, movie_titles))
+
+    for poster, rating, overview in results:
+        posters.append(poster)
+        ratings.append(rating)
+        overviews.append(overview)
+
+    return movie_titles, posters, ratings, overviews
+
+
+# Load data
+movies_dict = pickle.load(open('movie_dict.pkl', 'rb'))
+movies = pd.DataFrame(movies_dict)
+
+similarity = pickle.load(open('similarity.pkl', 'rb'))
+
+
+# UI
+st.title('🎬 Movie Recommender System')
+
+selected_movie_name = st.selectbox(
+    'Select a Movie',
+    movies['title'].values
+)
+
+if st.button('Recommend'):
+
+    with st.spinner('Fetching recommendations...'):
+        names, posters, ratings, overviews = recommend(selected_movie_name)
+
+    cols = st.columns(5)
+
+    for i in range(5):
+        with cols[i]:
+            st.text(names[i])
+            st.image(posters[i], width=200)
+            st.write(f"⭐ Rating: {ratings[i]}")
+            st.caption(overviews[i][:100] + "...")
