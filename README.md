@@ -37,7 +37,7 @@ An intelligent Movie Recommender System built using Machine Learning that sugges
 
 ai-powered-movie-recommender/
 
--app.py
+- app.py
 - movie_dict.pkl
 - similarity.pkl (not included)
 - requirements.txt
@@ -49,7 +49,7 @@ ai-powered-movie-recommender/
 
  'similarity.pkl' is **not uploaded** due to GitHub file size limitations (>25MB).
 
-👉 To run the project locally, you need to generate it using the Jupyter Notebook:
+  To run the project locally, you need to generate it using the Jupyter Notebook:
 
 ``python
 import pickle
