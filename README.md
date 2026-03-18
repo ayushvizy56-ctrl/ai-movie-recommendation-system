@@ -36,12 +36,12 @@ An intelligent Movie Recommender System built using Machine Learning that sugges
 ## Project Structure
 
 ai-powered-movie-recommender/
-│
-├── app.py
-├── movie_dict.pkl
-├── similarity.pkl (not included)
-├── requirements.txt
-├── movie_recommender.ipynb
+
+-app.py
+- movie_dict.pkl
+- similarity.pkl (not included)
+- requirements.txt
+- movie_recommender.ipynb
 
 ---
 
